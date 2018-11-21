@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>usercode</Authors>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Castle.Core" Version="4.3.1" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Abtractions\" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\ObjectChangeTracking.Abstractions\ObjectChangeTracking.Abstractions.csproj" />
+  </ItemGroup>
+  
+</Project>
