@@ -62,7 +62,11 @@ namespace ObjectChangeTracking.Interceptors
                 ObjectTrackingState.AddChangedProperty(propertyName, null);
 
                 invocation.Proceed();
-            }            
+            }
+            else
+            {
+                invocation.Proceed();
+            }
         }
     }
 }

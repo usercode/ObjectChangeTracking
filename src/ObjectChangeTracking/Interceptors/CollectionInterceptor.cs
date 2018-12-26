@@ -103,7 +103,7 @@ namespace ObjectChangeTracking.Interceptors
 
             if (CollectionChanged != null)
             {
-                CollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove));
+                CollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, new[] { item }));
             }
 
             OnCollectionChanged();

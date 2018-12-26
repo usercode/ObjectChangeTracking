@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ObjectChangeTracking", "Obj
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ObjectChangeTracking.Tests", "ObjectChangeTracking.Tests\ObjectChangeTracking.Tests.csproj", "{AE585801-C343-4A24-89EF-4D55DC23B1E2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ObjectChangeTracking.Abstractions", "ObjectChangeTracking.Abstractions\ObjectChangeTracking.Abstractions.csproj", "{FB406934-AC24-4AAB-9218-C5CD669C0DC9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ObjectChangeTracking.Abstractions", "ObjectChangeTracking.Abstractions\ObjectChangeTracking.Abstractions.csproj", "{BFCF5775-0C99-4336-8599-1831DC110566}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +23,10 @@ Global
 		{AE585801-C343-4A24-89EF-4D55DC23B1E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AE585801-C343-4A24-89EF-4D55DC23B1E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AE585801-C343-4A24-89EF-4D55DC23B1E2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FB406934-AC24-4AAB-9218-C5CD669C0DC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FB406934-AC24-4AAB-9218-C5CD669C0DC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FB406934-AC24-4AAB-9218-C5CD669C0DC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FB406934-AC24-4AAB-9218-C5CD669C0DC9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BFCF5775-0C99-4336-8599-1831DC110566}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFCF5775-0C99-4336-8599-1831DC110566}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFCF5775-0C99-4336-8599-1831DC110566}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFCF5775-0C99-4336-8599-1831DC110566}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
