@@ -1,7 +1,7 @@
 # ObjectChangeTracking
 It's a simple library to track property and collection changes in your objects.
 
-https://www.nuget.org/packages/ObjectChangeTracking/
+https://www.nuget.org/packages/ObjectChangeTracking
 
 ## How to use it ##
 
