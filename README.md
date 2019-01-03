@@ -16,13 +16,10 @@ customer.Firstname = "John";
 
 var trackableCustomer = (ITrackableObject)customer;
 
-bool isChanged = trackableObject.IsChanged; // -> true
+bool isChanged = trackableCustomer.IsChanged; // -> true
 
-var changedProperties = trackableObject.ChangedProperties;
-
-foreach(IChangedProperty changedProperty in changedProperties)
+foreach(IChangedProperty changedProperty in trackableCustomer.ChangedProperties)
 {
     Console.WriteLine(changedProperty.Name); // -> "Firstname"
 }
-
 ```
