@@ -19,6 +19,7 @@ namespace ObjectChangeTracking
             if (invocation.Method.IsSetterMethod())
             {
                 RaisePropertyChanging(invocation.Proxy, invocation.Method.GetPropertyName());
+
                 invocation.Proceed();
             }
             else

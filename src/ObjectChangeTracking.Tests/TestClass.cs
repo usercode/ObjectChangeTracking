@@ -5,21 +5,31 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using ObjectChangeTracking.Abstractions;
+using ObjectChangeTracking.Changes;
 
 namespace ObjectChangeTracking.Tests
 {
     public class TestClass
     {
         [Fact]
-        public void TestA()
+        public void SimplePropertyChange()
         {
             Item item = new Item();
+            item.Name = "old";
 
-            Item proxy = item.AsTrackable();
+            item = item.AsTrackable();
+            item.Name = "new";
 
-            proxy.Name = "123";
-
-            ITrackableObject tracking = proxy.CastToTrackable();
+            ITrackableObject tracking = item.CastToTrackable();
+            
+            Assert.NotNull(tracking);
+            Assert.Single(tracking.ChangedProperties);
+            
+            SimplePropertyChange c = tracking.ChangedProperties.Cast<SimplePropertyChange>().First();
+            
+            Assert.Equal(nameof(Item.Name), c.Name);
+            Assert.Equal("old", c.OldValue);
+            Assert.Equal("new", c.CurrentValue);
         }
 
         [Fact]
@@ -75,7 +85,7 @@ namespace ObjectChangeTracking.Tests
             ITrackableObject proxy = item.CastToTrackable();
 
             Assert.True(proxy.IsChanged);
-            Assert.True(proxy.ChangedProperties.Count() == 1);
+            Assert.Single(proxy.ChangedProperties);
             Assert.True(proxy.ChangedProperties.First().Name == nameof(Item.Name));
         }
 
@@ -98,7 +108,8 @@ namespace ObjectChangeTracking.Tests
             ITrackableCollection<Item> listTracked = list.CastToTrackableCollection();
 
             Assert.True(result);
-            Assert.True(listTracked.Added.Count() == 1);
+            Assert.Single(listTracked.Added);
+            Assert.Empty(listTracked.Removed);
 
         }
 
@@ -108,10 +119,15 @@ namespace ObjectChangeTracking.Tests
             Item item = new Item();
             item.Childs.Add(new Item() { Name = "Test" });
 
-            var trackableItem =  item.AsTrackable();
-            
-            Assert.True(trackableItem.Childs.Count() == 1);
+            item =  item.AsTrackable();
+            item.Childs.Add(new Item() { Name = "new" });
 
+            ITrackableObject trackableObject = item.CastToTrackable();
+
+            Assert.Equal(2, item.Childs.Count);
+            Assert.Single(trackableObject.ChangedProperties);
+            Assert.Single(trackableObject.ChangedProperties.Cast<CollectionPropertyChange>().First().Added);
+            Assert.Empty(trackableObject.ChangedProperties.Cast<CollectionPropertyChange>().First().Removed);
         }
 
         [Fact]
@@ -126,13 +142,13 @@ namespace ObjectChangeTracking.Tests
 
             ITrackableCollection<Item> collectionProxy = proxy.Childs.CastToTrackableCollection();
             
-            Assert.True(collectionProxy.Added.Count() == 1);
-            Assert.True(item.Childs.Count == 2);
-            Assert.True(proxy.Childs.Count == 2);
+            Assert.Single(collectionProxy.Added);
+            Assert.Equal(2, item.Childs.Count);
+            Assert.Equal(2, proxy.Childs.Count);
         }
 
         [Fact]
-        public void CollectionIItem()
+        public void CollectionItem()
         {
             IList<Item> list = new List<Item>().AsTrackableCollection();
             list.Add(new Item() { Name = "Test" });

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using ObjectChangeTracking.Abstractions;
+using Core.Reflection;
 
 namespace ObjectChangeTracking.Interceptors
 {
@@ -16,34 +17,37 @@ namespace ObjectChangeTracking.Interceptors
 
         public override void Intercept(IInvocation invocation)
         {
+            //get is changed?
             if (invocation.Method.IsGetterMethod(nameof(ITrackableObject.IsChanged)))
             {
                 invocation.ReturnValue = ObjectTrackingState.AnyChanges();
                 return;
             }
 
+            //get changed properties
             if (invocation.Method.IsGetterMethod(nameof(ITrackableObject.ChangedProperties)))
             {
                 invocation.ReturnValue = ObjectTrackingState.GetChangedProperties();
                 return;
             }
 
+            //getter?
             if (invocation.Method.IsGetterMethod())
             {
                 String property = invocation.Method.GetPropertyName();
 
                 var p = invocation.InvocationTarget.GetType().GetProperty(property);
-                bool collection = p.PropertyType.IsGenericType && p.PropertyType.GetGenericTypeDefinition() == typeof(IList<>);
+                bool collection = p.PropertyType.IsCollection();
 
                 if (collection)
                 {
-                    Object col = ObjectTrackingState.GetCollection(property);
+                    ITrackableCollection col = ObjectTrackingState.GetCollection(property);
 
                     if (col == null)
                     {
                         invocation.Proceed();
 
-                        col = invocation.ReturnValue.AsTrackingCollection(property, ObjectTrackingState);
+                        col = (ITrackableCollection)invocation.ReturnValue.AsTrackingCollection(property, ObjectTrackingState);
 
                         ObjectTrackingState.SetCollection(property, col);
                     }
@@ -55,17 +59,26 @@ namespace ObjectChangeTracking.Interceptors
                     invocation.Proceed();
                 }
             }
+            //setter?
             else if (invocation.Method.IsSetterMethod())
             {
-                String propertyName = invocation.Method.GetPropertyName();
+                string propertyName = invocation.Method.GetPropertyName();
 
-                ObjectTrackingState.AddChangedProperty(propertyName, null);
+                var accessor = PropertyAccessor.Get(invocation.TargetType.GetProperty(propertyName));
+
+                ObjectTrackingState.AddChangedProperty(propertyName, accessor.GetValue(invocation.InvocationTarget));
 
                 invocation.Proceed();
             }
             else
             {
                 invocation.Proceed();
+
+                //stop leaking "this"
+                if (invocation.ReturnValue == invocation.InvocationTarget)
+                {
+                    invocation.ReturnValue = invocation.Proxy;
+                }
             }
         }
     }

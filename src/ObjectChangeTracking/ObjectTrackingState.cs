@@ -3,35 +3,44 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using System.Reflection;
+using Core.Reflection;
+using ObjectChangeTracking.Abstractions;
+using ObjectChangeTracking.Changes;
 
 namespace ObjectChangeTracking
 {
     class ObjectTrackingState
     {
         private IDictionary<String, Object> _originalValues;
-        private IDictionary<String, Object> _collectionProxies;
+        private IDictionary<String, ITrackableCollection> _collectionProxies;
         
-        public ObjectTrackingState()
+        public ObjectTrackingState(object target)
         {
+            Target = target;
             _originalValues = new Dictionary<String, Object>();
-            _collectionProxies = new Dictionary<String, Object>();
+            _collectionProxies = new Dictionary<String, ITrackableCollection>();
         }
 
-        public void AddChangedProperty(String propertyName, object newValue)
+        /// <summary>
+        /// Target
+        /// </summary>
+        public object Target { get; }
+
+        public void AddChangedProperty(String propertyName, object oldValue)
         {
             if (_originalValues.TryGetValue(propertyName, out object value) == false)
             {
-                _originalValues.Add(propertyName, null);
+                _originalValues.Add(propertyName, oldValue);
             }
-            else
-            {
-                _originalValues[propertyName] = newValue;
-            }
+            //else
+            //{
+            //    _originalValues[propertyName] = oldValue;
+            //}
         }
 
-        public Object GetCollection(String property)
+        public ITrackableCollection GetCollection(String property)
         {
-            if (_collectionProxies.TryGetValue(property, out Object value))
+            if (_collectionProxies.TryGetValue(property, out ITrackableCollection value))
             {
                 return value;
             }
@@ -39,7 +48,7 @@ namespace ObjectChangeTracking
             return null;
         }
 
-        public void SetCollection(String property, Object list)
+        public void SetCollection(string property, ITrackableCollection list)
         {
             if (_collectionProxies.ContainsKey(property) == false)
             {
@@ -51,14 +60,24 @@ namespace ObjectChangeTracking
             }
         }
 
-        public IEnumerable<ChangedProperty> GetChangedProperties()
+        public IEnumerable<IPropertyChange> GetChangedProperties()
         {
-            return _originalValues.Keys.Select(x => new ChangedProperty(x, null));
+            var simpleProperties = _originalValues.Select(x => new SimplePropertyChange(
+                                                                    x.Key,
+                                                                    x.Value,
+                                                                    PropertyAccessor.Get(Target.GetType().GetProperty(x.Key)).GetValue(Target)))
+                                                            .Cast<IPropertyChange>();
+
+            var collectionProperties = _collectionProxies
+                                                    .Select(x => new CollectionPropertyChange(x.Key, x.Value.Added, x.Value.Removed))
+                                                    .Cast<IPropertyChange>();                                                    
+
+            return simpleProperties.Concat(collectionProperties).ToList();
         }
 
         public bool AnyChanges()
         {
-            return _originalValues.Any() || _collectionProxies.Any();
+            return _originalValues.Any() || _collectionProxies.Any(x => x.Value.Added.Any() || x.Value.Removed.Any());
         }        
     }
 }

@@ -4,8 +4,8 @@ using System.Text;
 
 namespace ObjectChangeTracking.Abstractions
 {
-    public interface IChangedProperty
+    public interface IPropertyChange
     {
-        String Name { get; }
+        string Name { get; }
     }
 }

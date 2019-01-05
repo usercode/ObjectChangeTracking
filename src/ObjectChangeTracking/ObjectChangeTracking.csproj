@@ -6,14 +6,12 @@
     <PackageProjectUrl>https://github.com/usercode/ObjectChangeTracking</PackageProjectUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>It's a simple library to track property and collection changes in your objects.</Description>
+    <Version>1.0.1</Version>
   </PropertyGroup>
   
   <ItemGroup>
     <PackageReference Include="Castle.Core" Version="4.3.1" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <ProjectReference Include="..\ObjectChangeTracking.Abstractions\ObjectChangeTracking.Abstractions.csproj" />
+    <PackageReference Include="ObjectChangeTracking.Abstractions" Version="1.0.1" />
   </ItemGroup>
   
 </Project>

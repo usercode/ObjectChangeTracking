@@ -36,6 +36,9 @@ namespace ObjectChangeTracking
             return methodInfo.Name.Substring(ReflectionHelper.GetterPrefix.Length);
         }
 
-        
+        public static bool IsCollection(this Type type)
+        {
+            return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IList<>);
+        }
     }
 }

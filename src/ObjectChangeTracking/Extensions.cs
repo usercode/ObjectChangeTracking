@@ -26,12 +26,13 @@ namespace ObjectChangeTracking
         public static T AsTrackable<T>(this T obj)
             where T : class
         {
+            //is the object already a trackable object?
             if(obj is ITrackableObject)
             {
                 return obj;
             }
 
-            ObjectTrackingState objectTrackingState = new ObjectTrackingState();
+            ObjectTrackingState objectTrackingState = new ObjectTrackingState(obj);
 
             if (obj is IEnumerable<Object>)
             {
@@ -69,7 +70,7 @@ namespace ObjectChangeTracking
         public static IList<T> AsTrackableCollection<T>(this IList<T> obj)
             where T : class
         {
-            ObjectTrackingState objectTrackingState = new ObjectTrackingState();
+            ObjectTrackingState objectTrackingState = new ObjectTrackingState(obj);
 
             IList<T> result = (IList<T>)Generator.CreateInterfaceProxyWithTarget(
                                         typeof(IList<T>),
@@ -93,7 +94,7 @@ namespace ObjectChangeTracking
 
             Object result = Generator.CreateInterfaceProxyWithTarget(
                                     typeof(IList<>).MakeGenericType(itemType),
-                                    new[] { typeof(IList), typeof(ITrackableCollection<>).MakeGenericType(itemType), typeof(INotifyCollectionChanged) },
+                                    new[] { typeof(IList), typeof(ITrackableCollection), typeof(ITrackableCollection<>).MakeGenericType(itemType), typeof(INotifyCollectionChanged) },
                                     obj,
                                     (IInterceptor)Activator.CreateInstance(typeof(CollectionInterceptor<>).MakeGenericType(itemType), new object[] { objectTrackingState, property })
                                     );

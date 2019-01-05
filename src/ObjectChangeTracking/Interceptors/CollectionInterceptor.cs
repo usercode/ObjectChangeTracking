@@ -1,5 +1,6 @@
 ﻿using Castle.DynamicProxy;
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -16,9 +17,12 @@ namespace ObjectChangeTracking.Interceptors
         private IList<T> Added;
         private IList<T> Removed;
 
-        public String Property { get; private set; }
+        /// <summary>
+        /// Property
+        /// </summary>
+        public string Property { get; }
 
-        public CollectionInterceptor(ObjectTrackingState objectTrackingState, String property)
+        public CollectionInterceptor(ObjectTrackingState objectTrackingState, string property)
             : base(objectTrackingState)
         {
             Added = new List<T>();
@@ -27,27 +31,31 @@ namespace ObjectChangeTracking.Interceptors
             Property = property;
         }
 
-
         public override void Intercept(IInvocation invocation)
         {
-            if (invocation.Method.Name == "get_Added")
+            String methodName = invocation.Method.Name;
+
+            if (methodName == "get_Added")
             {
-                invocation.ReturnValue = Added;
+                invocation.ReturnValue = new ReadOnlyCollection<T>(Added);
+            }
+            else if (methodName == "get_Removed")
+            {
+                invocation.ReturnValue = new ReadOnlyCollection<T>(Removed);
+            }
+            else if (methodName == "get_Item")
+            {
+                invocation.Proceed();
+
+                //invocation.ReturnValue = invocation.ReturnValue.AsTrackable(); //does not work
 
                 return;
             }
-            else if (invocation.Method.Name == "get_Removed")
-            {
-                invocation.ReturnValue = Removed;
-
-                return;
-            }
-
-            if (invocation.Method.Name == "add_CollectionChanged")
+            else if (methodName == "add_CollectionChanged")
             {
                 CollectionChanged += (NotifyCollectionChangedEventHandler)invocation.Arguments[0];
             }
-            else if (invocation.Method.Name == "remove_CollectionChanged")
+            else if (methodName == "remove_CollectionChanged")
             {
                 CollectionChanged -= (NotifyCollectionChangedEventHandler)invocation.Arguments[0];
             }
@@ -55,19 +63,18 @@ namespace ObjectChangeTracking.Interceptors
             {
                 invocation.Proceed();
 
-                if (invocation.Method.Name == nameof(IList.Add))
+                if (methodName == nameof(IList.Add))
                 {
                     RaiseCollectionChangedAdd((T)invocation.Arguments[0]);
                 }
-                else if (invocation.Method.Name == nameof(IList.Remove))
+                else if (methodName == nameof(IList.Remove))
                 {
                     RaiseCollectionChangedRemove((T)invocation.Arguments[0]);
                 }
-                else if (invocation.Method.Name == nameof(IList.Clear))
+                else if (methodName == nameof(IList.Clear))
                 {
                     //RaiseCollectionChangedClear();
                 }
-
             }
         }
 
@@ -75,7 +82,7 @@ namespace ObjectChangeTracking.Interceptors
         {
             if(Property != null)
             {
-                ObjectTrackingState.AddChangedProperty(Property, null);
+                //ObjectTrackingState.AddChangedProperty(Property, null);
             }
         }
 

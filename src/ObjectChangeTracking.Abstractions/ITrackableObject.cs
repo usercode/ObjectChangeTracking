@@ -17,6 +17,6 @@ namespace ObjectChangeTracking.Abstractions
         /// <summary>
         /// ChangedProperties
         /// </summary>
-        IEnumerable<IChangedProperty> ChangedProperties { get; }
+        IEnumerable<IPropertyChange> ChangedProperties { get; }
     }
 }
