@@ -18,7 +18,7 @@ var trackableCustomer = (ITrackableObject)customer;
 
 bool isChanged = trackableCustomer.IsChanged; // -> true
 
-foreach(IChangedProperty changedProperty in trackableCustomer.ChangedProperties)
+foreach(IPropertyChange changedProperty in trackableCustomer.ChangedProperties)
 {
     Console.WriteLine(changedProperty.Name); // -> "Firstname"
 }
