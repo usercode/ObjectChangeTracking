@@ -29,6 +29,8 @@ foreach(IPropertyChange changedProperty in trackableCustomer.ChangedProperties)
     }
     else if(changedProperty is CollectionPropertyChange collectionProperty)
     {
+        Console.WriteLine(collectionProperty.Name);
+        
         foreach(var added in collectionProperty.Added)
         {
              Console.WriteLine("Added: " + added);
