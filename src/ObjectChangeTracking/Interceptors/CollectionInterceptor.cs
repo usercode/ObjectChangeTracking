@@ -47,7 +47,7 @@ namespace ObjectChangeTracking.Interceptors
             {
                 invocation.Proceed();
 
-                //invocation.ReturnValue = invocation.ReturnValue.AsTrackable(); //does not work
+                invocation.ReturnValue = invocation.ReturnValue.AsTrackable();
 
                 return;
             }

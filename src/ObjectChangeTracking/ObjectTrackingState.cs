@@ -11,8 +11,8 @@ namespace ObjectChangeTracking
 {
     class ObjectTrackingState
     {
-        private IDictionary<String, Object> _originalValues;
-        private IDictionary<String, ITrackableCollection> _collectionProxies;
+        private IDictionary<string, object> _originalValues;
+        private IDictionary<string, ITrackableCollection> _collectionProxies;
         
         public ObjectTrackingState(object target)
         {
@@ -69,6 +69,7 @@ namespace ObjectChangeTracking
                                                             .Cast<IPropertyChange>();
 
             var collectionProperties = _collectionProxies
+                                                    .Where(x => x.Value.Added.Any() || x.Value.Removed.Any())
                                                     .Select(x => new CollectionPropertyChange(x.Key, x.Value.Added, x.Value.Removed))
                                                     .Cast<IPropertyChange>();                                                    
 

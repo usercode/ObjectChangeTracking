@@ -17,6 +17,28 @@ namespace ObjectChangeTracking
     {
         internal static ProxyGenerator Generator = new ProxyGenerator();
 
+        public static object AsTrackable(this object obj)
+        {
+            //is the object already a trackable object?
+            if (obj is ITrackableObject)
+            {
+                return obj;
+            }
+
+            ObjectTrackingState objectTrackingState = new ObjectTrackingState(obj);
+
+            object result = Generator.CreateClassProxyWithTarget(
+                            obj.GetType(),
+                            new[] { typeof(ITrackableObject), typeof(INotifyPropertyChanging), typeof(INotifyPropertyChanged) },
+                            obj,
+                            new PropertyChangingInterceptor(objectTrackingState),
+                            new PropertyChangedInterceptor(objectTrackingState),
+                            new ObjectInterceptor(objectTrackingState)
+                            );
+
+            return result;
+        }
+
         /// <summary>
         /// AsTrackable
         /// </summary>
@@ -26,39 +48,7 @@ namespace ObjectChangeTracking
         public static T AsTrackable<T>(this T obj)
             where T : class
         {
-            //is the object already a trackable object?
-            if(obj is ITrackableObject)
-            {
-                return obj;
-            }
-
-            ObjectTrackingState objectTrackingState = new ObjectTrackingState(obj);
-
-            if (obj is IEnumerable<Object>)
-            {
-                Type itemType = obj.GetType().GetGenericArguments()[0];
-                T result = (T)Generator.CreateInterfaceProxyWithTarget(
-                                        typeof(IList<T>),
-                                        new[] { typeof(ITrackableCollection<T>), typeof(INotifyCollectionChanged) },
-                                        obj,
-                                        new CollectionInterceptor<T>(objectTrackingState, null)
-                                        );
-
-                return result;
-            }
-            else
-            {
-                T result = (T)Generator.CreateClassProxyWithTarget(
-                                typeof(T),
-                                new[] { typeof(ITrackableObject), typeof(INotifyPropertyChanging), typeof(INotifyPropertyChanged) },
-                                obj,
-                                new PropertyChangingInterceptor(objectTrackingState),
-                                new PropertyChangedInterceptor(objectTrackingState),
-                                new ObjectInterceptor(objectTrackingState)
-                                );
-
-                return result;
-            }
+            return (T)AsTrackable((object)obj);
         }
 
         /// <summary>
@@ -88,11 +78,11 @@ namespace ObjectChangeTracking
         /// <param name="obj"></param>
         /// <param name="objectTrackingState"></param>
         /// <returns></returns>
-        internal static Object AsTrackingCollection(this Object obj, String property, ObjectTrackingState objectTrackingState)
+        internal static object AsTrackingCollection(this Object obj, String property, ObjectTrackingState objectTrackingState)
         {
             Type itemType = obj.GetType().GetGenericArguments()[0];
 
-            Object result = Generator.CreateInterfaceProxyWithTarget(
+            object result = Generator.CreateInterfaceProxyWithTarget(
                                     typeof(IList<>).MakeGenericType(itemType),
                                     new[] { typeof(IList), typeof(ITrackableCollection), typeof(ITrackableCollection<>).MakeGenericType(itemType), typeof(INotifyCollectionChanged) },
                                     obj,
