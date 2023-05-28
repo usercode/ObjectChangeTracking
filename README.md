@@ -1,9 +1,8 @@
 # ObjectChangeTracking
 It's a simple library to track property and collection changes in your objects.
 
-https://www.nuget.org/packages/ObjectChangeTracking
-
-Status: Pre-alpha
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+[![NuGet](https://img.shields.io/nuget/v/ObjectChangeTracking.svg?style=flat-square)](https://www.nuget.org/packages/ObjectChangeTracking/)
 
 ## How to use it ##
 
