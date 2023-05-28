@@ -1,22 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace ObjectChangeTracking.Abstractions;
 
-namespace ObjectChangeTracking.Abstractions
+/// <summary>
+/// ITrackableObject
+/// </summary>
+public interface ITrackableObject
 {
     /// <summary>
-    /// ITrackableObject
+    /// IsChanged
     /// </summary>
-    public interface ITrackableObject
-    {
-        /// <summary>
-        /// IsChanged
-        /// </summary>
-        bool IsChanged { get; }
+    bool IsChanged { get; }
 
-        /// <summary>
-        /// ChangedProperties
-        /// </summary>
-        IEnumerable<IPropertyChange> ChangedProperties { get; }
-    }
+    /// <summary>
+    /// ChangedProperties
+    /// </summary>
+    IEnumerable<IPropertyChange> ChangedProperties { get; }
 }

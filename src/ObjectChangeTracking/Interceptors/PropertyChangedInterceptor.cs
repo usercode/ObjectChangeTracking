@@ -1,49 +1,45 @@
 ﻿using Castle.DynamicProxy;
 using ObjectChangeTracking.Interceptors;
-using System;
 using System.ComponentModel;
 
-namespace ObjectChangeTracking
+namespace ObjectChangeTracking;
+
+class PropertyChangedInterceptor : BaseInterceptor
 {
-    class PropertyChangedInterceptor : BaseInterceptor
+    private event PropertyChangedEventHandler? PropertyChanged;
+
+    public PropertyChangedInterceptor(ObjectTrackingState objectTrackingState)
+        : base(objectTrackingState)
     {
-        private event PropertyChangedEventHandler PropertyChanged;
+    }
 
-        public PropertyChangedInterceptor(ObjectTrackingState objectTrackingState)
-            : base(objectTrackingState)
+    public override void Intercept(IInvocation invocation)
+    {
+        if (invocation.Method.IsSetterMethod())
         {
+            invocation.Proceed();
+
+            RaisePropertyChanged(invocation.Proxy, invocation.Method.GetPropertyName());
         }
-
-        public override void Intercept(IInvocation invocation)
+        else
         {
-            if (invocation.Method.IsSetterMethod())
+            switch (invocation.Method.Name)
             {
-                invocation.Proceed();
-                RaisePropertyChanged(invocation.Proxy, invocation.Method.GetPropertyName());
-            }
-            else
-            {
-                switch (invocation.Method.Name)
-                {
-                    case "add_PropertyChanged":
-                        PropertyChanged += (PropertyChangedEventHandler)invocation.Arguments[0];
-                        break;
-                    case "remove_PropertyChanged":
-                        PropertyChanged -= (PropertyChangedEventHandler)invocation.Arguments[0];
-                        break;
-                    default:
-                        invocation.Proceed();
-                        break;
-                }
+                case $"{ReflectionHelper.AddPrefix}{nameof(INotifyPropertyChanged.PropertyChanged)}":
+                    PropertyChanged += (PropertyChangedEventHandler)invocation.Arguments[0];
+                    break;
+                case $"{ReflectionHelper.RemovePrefix}{nameof(INotifyPropertyChanged.PropertyChanged)}":
+                    PropertyChanged -= (PropertyChangedEventHandler)invocation.Arguments[0];
+                    break;
+                default:
+                    invocation.Proceed();
+                    break;
             }
         }
+    }
 
-        private void RaisePropertyChanged(Object proxy, String propertyName)
-        {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(proxy, new PropertyChangedEventArgs(propertyName));
-            }
-        }
+    private void RaisePropertyChanged(object proxy, string propertyName)
+    {
+        PropertyChanged?.Invoke(proxy, new PropertyChangedEventArgs(propertyName));
     }
 }

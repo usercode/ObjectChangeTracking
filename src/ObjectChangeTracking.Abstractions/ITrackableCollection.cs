@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections;
 
-namespace ObjectChangeTracking.Abstractions
+namespace ObjectChangeTracking.Abstractions;
+
+public interface ITrackableCollection : IEnumerable
 {
-    public interface ITrackableCollection : IEnumerable
-    {
-        IEnumerable<object> Added { get; }
-        IEnumerable<object> Removed { get; }
-    }
+    IEnumerable<object> Added { get; }
+    IEnumerable<object> Removed { get; }
 }

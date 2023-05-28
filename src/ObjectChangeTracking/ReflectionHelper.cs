@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace ObjectChangeTracking;
 
-namespace ObjectChangeTracking
+static class ReflectionHelper
 {
-    class ReflectionHelper
-    {
-        public const String GetterPrefix = "get_";
-        public const String SetterPrefix = "set_";
+    public const string GetterPrefix = "get_";
+    public const string SetterPrefix = "set_";
 
-        public const String AddPrefix = "add_";
-        public const String RemovePrefix = "remove_";
-    }
+    public const string AddPrefix = "add_";
+    public const string RemovePrefix = "remove_";
 }

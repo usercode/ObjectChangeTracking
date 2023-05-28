@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace ObjectChangeTracking.Abstractions;
 
-namespace ObjectChangeTracking.Abstractions
+public interface IPropertyChange
 {
-    public interface IPropertyChange
-    {
-        string Name { get; }
-    }
+    string Name { get; }
 }

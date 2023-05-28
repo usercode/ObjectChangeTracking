@@ -6,156 +6,156 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using ObjectChangeTracking.Abstractions;
 using ObjectChangeTracking.Changes;
+using Xunit.Abstractions;
 
-namespace ObjectChangeTracking.Tests
+namespace ObjectChangeTracking.Tests;
+
+public class TestClass
 {
-    public class TestClass
+    [Fact]
+    public void SimplePropertyChange()
     {
-        [Fact]
-        public void SimplePropertyChange()
+        Item item = new Item();
+        item.Name = "old";
+
+        item = item.AsTrackable();
+        item.Name = "new";
+
+        ITrackableObject tracking = item.CastToTrackable();
+        
+        Assert.NotNull(tracking);
+        Assert.Single(tracking.ChangedProperties);
+        
+        SimplePropertyChange c = tracking.ChangedProperties.Cast<SimplePropertyChange>().First();
+        
+        Assert.Equal(nameof(Item.Name), c.Name);
+        Assert.Equal("old", c.OldValue);
+        Assert.Equal("new", c.CurrentValue);
+    }
+
+    [Fact]
+    public void NotifyPropertyChanged()
+    {
+        Item item = new Item() { Name = "abc" }.AsTrackable();
+
+        INotifyPropertyChanged proxy = (INotifyPropertyChanged)item;
+
+        bool raised = false;
+
+        proxy.PropertyChanged += (obj, args) =>
         {
-            Item item = new Item();
-            item.Name = "old";
-
-            item = item.AsTrackable();
-            item.Name = "new";
-
-            ITrackableObject tracking = item.CastToTrackable();
-            
-            Assert.NotNull(tracking);
-            Assert.Single(tracking.ChangedProperties);
-            
-            SimplePropertyChange c = tracking.ChangedProperties.Cast<SimplePropertyChange>().First();
-            
-            Assert.Equal(nameof(Item.Name), c.Name);
-            Assert.Equal("old", c.OldValue);
-            Assert.Equal("new", c.CurrentValue);
-        }
-
-        [Fact]
-        public void NotifyPropertyChanged()
-        {
-            Item item = new Item() { Name = "abc" }.AsTrackable();
-
-            INotifyPropertyChanged proxy = (INotifyPropertyChanged)item;
-
-            bool raised = false;
-
-            proxy.PropertyChanged += (obj, args) =>
+            if (item.Name == "123")
             {
-                if (item.Name == "123")
-                {
-                    raised = true;
-                }
-            };
+                raised = true;
+            }
+        };
 
-            item.Name = "123";
+        item.Name = "123";
 
-            Assert.True(raised);
-        }
+        Assert.True(raised);
+    }
 
-        [Fact]
-        public void NotifyPropertyChanging()
+    [Fact]
+    public void NotifyPropertyChanging()
+    {
+        Item item = new Item() { Name = "abc" }.AsTrackable();
+
+        INotifyPropertyChanging proxy = (INotifyPropertyChanging)item;
+
+        bool raised = false;
+
+        proxy.PropertyChanging += (obj, args) =>
         {
-            Item item = new Item() { Name = "abc" }.AsTrackable();
-
-            INotifyPropertyChanging proxy = (INotifyPropertyChanging)item;
-
-            bool raised = false;
-
-            proxy.PropertyChanging += (obj, args) =>
+            if (item.Name == "abc")
             {
-                if (item.Name == "abc")
-                {
-                    raised = true;
-                }
-            };
+                raised = true;
+            }
+        };
 
-            item.Name = "123";
+        item.Name = "123";
 
-            Assert.True(raised);
-        }
+        Assert.True(raised);
+    }
 
-        [Fact]
-        public void ChangeProperties()
+    [Fact]
+    public void ChangeProperties()
+    {
+        Item item = new Item() { Name = "abc" }.AsTrackable();            
+        item.Name = "123";
+
+        ITrackableObject proxy = item.CastToTrackable();
+
+        Assert.True(proxy.IsChanged);
+        Assert.Single(proxy.ChangedProperties);
+        Assert.True(proxy.ChangedProperties.First().Name == nameof(Item.Name));
+    }
+
+    [Fact]
+    public void CollectionChanges()
+    {
+        IList<Item> list = new List<Item>().AsTrackableCollection();
+
+        bool result = false;
+
+        INotifyCollectionChanged notifyList = list as INotifyCollectionChanged;
+
+        notifyList.CollectionChanged += (a, args) =>
         {
-            Item item = new Item() { Name = "abc" }.AsTrackable();            
-            item.Name = "123";
+            result = true;
+        };
 
-            ITrackableObject proxy = item.CastToTrackable();
+        list.Add(new Item() { Name = "test" });
 
-            Assert.True(proxy.IsChanged);
-            Assert.Single(proxy.ChangedProperties);
-            Assert.True(proxy.ChangedProperties.First().Name == nameof(Item.Name));
-        }
+        ITrackableCollection<Item> listTracked = list.CastToTrackableCollection();
 
-        [Fact]
-        public void CollectionChanges()
-        {
-            IList<Item> list = new List<Item>().AsTrackableCollection();
+        Assert.True(result);
+        Assert.Single(listTracked.Added);
+        Assert.Empty(listTracked.Removed);
 
-            bool result = false;
+    }
 
-            INotifyCollectionChanged notifyList = list as INotifyCollectionChanged;
+    [Fact]
+    public void CollectionChangesV2()
+    {
+        Item item = new Item();
+        item.Childs.Add(new Item() { Name = "Test" });
 
-            notifyList.CollectionChanged += (a, args) =>
-            {
-                result = true;
-            };
+        item =  item.AsTrackable();
+        item.Childs.Add(new Item() { Name = "new" });
 
-            list.Add(new Item() { Name = "test" });
+        ITrackableObject trackableObject = item.CastToTrackable();
 
-            ITrackableCollection<Item> listTracked = list.CastToTrackableCollection();
+        Assert.Equal(2, item.Childs.Count);
+        Assert.Single(trackableObject.ChangedProperties);
+        Assert.Single(trackableObject.ChangedProperties.Cast<CollectionPropertyChange>().First().Added);
+        Assert.Empty(trackableObject.ChangedProperties.Cast<CollectionPropertyChange>().First().Removed);
+    }
 
-            Assert.True(result);
-            Assert.Single(listTracked.Added);
-            Assert.Empty(listTracked.Removed);
+    [Fact]
+    public void CollectionChildProxy()
+    {
+        Item item = new Item();
+        item.Childs.Add(new Item() { Name = "123" });
 
-        }
+        Item proxy = item.AsTrackable();
 
-        [Fact]
-        public void CollectionChangesV2()
-        {
-            Item item = new Item();
-            item.Childs.Add(new Item() { Name = "Test" });
+        proxy.Childs.Add(new Item() { Name = "test" });
 
-            item =  item.AsTrackable();
-            item.Childs.Add(new Item() { Name = "new" });
+        ITrackableCollection<Item> collectionProxy = proxy.Childs.CastToTrackableCollection();
+        
+        Assert.Single(collectionProxy.Added);
+        Assert.Equal(2, item.Childs.Count);
+        Assert.Equal(2, proxy.Childs.Count);
+    }
 
-            ITrackableObject trackableObject = item.CastToTrackable();
+    [Fact]
+    public void CollectionItem()
+    {
+        IList<Item> list = new List<Item>().AsTrackableCollection();
+        list.Add(new Item() { Name = "Test" });
 
-            Assert.Equal(2, item.Childs.Count);
-            Assert.Single(trackableObject.ChangedProperties);
-            Assert.Single(trackableObject.ChangedProperties.Cast<CollectionPropertyChange>().First().Added);
-            Assert.Empty(trackableObject.ChangedProperties.Cast<CollectionPropertyChange>().First().Removed);
-        }
+        Item item = list[0];
 
-        [Fact]
-        public void CollectionChildProxy()
-        {
-            Item item = new Item();
-            item.Childs.Add(new Item() { Name = "123" });
-
-            Item proxy = item.AsTrackable();
-
-            proxy.Childs.Add(new Item() { Name = "test" });
-
-            ITrackableCollection<Item> collectionProxy = proxy.Childs.CastToTrackableCollection();
-            
-            Assert.Single(collectionProxy.Added);
-            Assert.Equal(2, item.Childs.Count);
-            Assert.Equal(2, proxy.Childs.Count);
-        }
-
-        [Fact]
-        public void CollectionItem()
-        {
-            IList<Item> list = new List<Item>().AsTrackableCollection();
-            list.Add(new Item() { Name = "Test" });
-
-            Item item = list[0];
-
-            Assert.True(item is ITrackableObject);
-        }
+        Assert.True(item is ITrackableObject);
     }
 }
